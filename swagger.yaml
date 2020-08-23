@@ -1,0 +1,196 @@
+openapi: 3.0.0
+info:
+  title: Payment API
+  description: Service for making payments by credit card
+  version: 1.0.0
+paths:
+  /payment:
+    get:
+      summary: Gets payment by session_id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionId'
+            example:
+              session_id: ecef274b-c4d9-11ea-9c98-16e54378dfba
+      responses:
+        '200':    # status code
+          description: A payment JSON object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentData'
+              example:
+                id: 42
+                sum: 50000
+                purpose: An example payment
+                session_id: ecef274b-c4d9-11ea-9c98-16e54378dfba
+                created_time: 16-07-2020 00:00:00
+                completed_time: 18-07-2020 00:00:00
+                expire_time: 23-07-2020 00:00:00
+                completed: true
+                card: "4561261212345467"
+    post:
+      summary: Creates payment and returns session_id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePaymentRequest'
+            example:
+              sum: 50000
+              purpose: An example payment
+      responses:
+        '200':    # status code
+          description: A payment JSON object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionId'
+              example:
+                session_id: ecef274b-c4d9-11ea-9c98-16e54378dfba
+  /payments:
+    get:
+      summary: Gets payments in some date period
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+          example: 657a3d34-c7ea-11ea-b96f-16e54378dfba
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Period'
+            example:
+              from: 16-07-2020 00:00:00
+              to: 25-07-2020 00:00:00
+      responses:
+        '200':    # status code
+          description: A payment JSON object
+          content:
+            application/json:
+              schema:
+                type: array
+              example:
+                - {
+                  "id": 2,
+                  "sum": 20000,
+                  "purpose": "Freelance salary",
+                  "session_id": "0403703f-c741-11ea-b0d2-16e54378dfba",
+                  "created_time": "16-07-2020 11:47:44",
+                  "completed_time": "17-07-2020 11:55:55",
+                  "expire_time": "23-07-2020 11:47:44",
+                  "completed": true,
+                  "card": "4561261212345467"
+                }
+                -  {
+                  "id": 5,
+                  "sum": 20000,
+                  "purpose": "Freelance salary",
+                  "session_id": "7b3651f3-c7ea-11ea-b96f-16e54378dfba",
+                  "created_time": "17-07-2020 08:00:49",
+                  "completed_time": "17-07-2020 08:03:16",
+                  "expire_time": "24-07-2020 08:00:49",
+                  "completed": true,
+                  "card": "4561236545233218"
+                }
+  /validate:
+    post:
+      summary: Validates card and makes payment completed
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreditCardData'
+            example:
+              user: Alex Petrov
+              number: "4561261212345467"
+              cvv: 765
+              expire_date: 03/22
+              session_id: ecef274b-c4d9-11ea-9c98-16e54378dfba
+      responses:
+        '200':    # status code
+          description: A payment JSON object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: ""
+components:
+  schemas:
+    SessionId:
+      title: session id
+      type: object
+      properties:
+        session_id:
+          type: string
+          description: a payment session id
+      required:
+        - session_id
+    PaymentData:
+      title: a payment
+      type: object
+      properties:
+        id:
+          type: integer
+        sum:
+          type: integer
+        purpose:
+          type: string
+        session_id:
+          type: string
+        created_time:
+          type: string
+        completed_time:
+          type: string
+        expire_time:
+          type: string
+        completed:
+          type: boolean
+        card:
+          type: string
+    Period:
+      title: a date period
+      type: object
+      properties:
+        from:
+          type: string
+        to:
+          type: string
+    CreatePaymentRequest:
+      title: a payment data
+      type: object
+      properties:
+        sum:
+          type: integer
+        purpose:
+          type: string
+    CreditCardData:
+      title: credit card data
+      type: object
+      properties:
+        user:
+          type: string
+        number:
+          type: string
+        cvv:
+          type: integer
+        expire_date:
+          type: string
+        session_id:
+          type: string
+    Error:
+      title: error object
+      type: object
+      properties:
+        error:
+          type: string

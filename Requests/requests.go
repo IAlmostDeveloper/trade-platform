@@ -3,7 +3,6 @@ package requests
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/google/uuid"
 	"github.com/gorilla/handlers"
@@ -115,7 +114,11 @@ func GetProduct(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateProduct(w http.ResponseWriter, r *http.Request) {
-
+	token, _ := r.Cookie("token")
+	if token != nil{
+		var result = service.GetLoginFromToken(token.Value)
+		w.Write([]byte(result))
+	}
 }
 
 func Authenticate(w http.ResponseWriter, r *http.Request) {
@@ -126,14 +129,7 @@ func Authenticate(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Incorrect user data.", http.StatusUnauthorized)
 	}
 	expirationTime := time.Now().Add(5 * time.Minute)
-	claims := entities.Claims{
-		Login: request.Login,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: expirationTime.Unix(),
-		},
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(service.JwtKey)
+	tokenString, err := service.CreateToken(user.Login, expirationTime)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

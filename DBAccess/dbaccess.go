@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
-	"payment-service/Entities"
+	"trade-platform/Entities"
 )
 
 func CreateDB() {
@@ -19,7 +19,7 @@ func CreateDB() {
 		"sum integer, purpose text, session_id text, created_time text," +
 		"completed_time text, expire_time text, completed numeric, card text)")
 	db.Exec("create table if not exists products(id integer primary key autoincrement, " +
-		"name text, key text unique, price integer, commisiion integer)")
+		"name text, key text unique, price integer, commisiion integer, owner_id integer)")
 }
 
 func GetPayment(session_id string) entities.PaymentFromDB {

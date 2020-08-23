@@ -1,5 +1,7 @@
 package entities
 
+import "github.com/dgrijalva/jwt-go"
+
 type Payment struct {
 	Sum     int    `json:"sum"`
 	Purpose string `json:"purpose"`
@@ -38,6 +40,16 @@ type CardValidationResponse struct {
 	Error string `json:"error"`
 }
 
+type AuthRequestJson struct {
+	Login string `json:"login"`
+	Password string `json:"password"`
+}
+
+type Claims struct {
+	Login string `json:"login"`
+	jwt.StandardClaims
+}
+
 type UserCredentials struct {
 	Id int `json:"id"`
 	Login string `json:"login"`
@@ -50,4 +62,5 @@ type Product struct {
 	Key string `json:"key"`
 	Price int `json:"price"`
 	Commission int `json:"commission"`
+	OwnerId int `json:"owner_id"`
 }

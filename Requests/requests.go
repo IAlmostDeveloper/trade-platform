@@ -3,16 +3,17 @@ package requests
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/google/uuid"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-	dbaccess "payment-service/DBAccess"
-	entities "payment-service/Entities"
-	service "payment-service/Service"
 	"time"
+	dbaccess "trade-platform/DBAccess"
+	entities "trade-platform/Entities"
+	service "trade-platform/Service"
 )
 
 var key, _ = uuid.NewUUID()
@@ -83,6 +84,79 @@ func ValidateCard(w http.ResponseWriter, r *http.Request) {
 	w.Write(js)
 }
 
+func GetProducts(w http.ResponseWriter, r *http.Request){
+	response := dbaccess.GetAllProducts()
+	//fmt.Println(r.Cookie("token"))
+	//service.WriteToken("1234")
+	token, err := r.Cookie("token")
+	if token != nil{
+		if !service.CheckToken(token.String()){
+			http.Error(w, "Authorization failed", http.StatusUnauthorized)
+			return
+		}
+	}
+	js, err := json.Marshal(response)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Write(js)
+}
+
+func GetProduct(w http.ResponseWriter, r *http.Request) {
+	id := service.GetIdFromPath(r.URL.Path)
+	response := dbaccess.FindProductById(id)
+	js, err := json.Marshal(response)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Write(js)
+}
+
+func CreateProduct(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func Authenticate(w http.ResponseWriter, r *http.Request) {
+	var request entities.AuthRequestJson
+	json.NewDecoder(r.Body).Decode(&request)
+	user := dbaccess.FindUserByLoginAndPassword(request)
+	if user.Id == 0 {
+		http.Error(w, "Incorrect user data.", http.StatusUnauthorized)
+	}
+	expirationTime := time.Now().Add(5 * time.Minute)
+	claims := entities.Claims{
+		Login: request.Login,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: expirationTime.Unix(),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString(service.JwtKey)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	service.WriteToken(tokenString)
+	http.SetCookie(w, &http.Cookie{
+		Name:    "token",
+		Value:   tokenString,
+		Expires: expirationTime,
+	})
+}
+
+func Register(w http.ResponseWriter, r *http.Request) {
+	var user entities.AuthRequestJson
+	json.NewDecoder(r.Body).Decode(&user)
+	if dbaccess.FindUserByLogin(user.Login).Id==0{
+		dbaccess.InsertUser(user)
+		return
+	}
+	http.Error(w, "User with this name already exists", http.StatusBadRequest)
+
+}
+
 func HandleRequests() {
 	fmt.Println("Server started successfully. Here's admin key:")
 	fmt.Println(key.String())
@@ -96,8 +170,17 @@ func HandleRequests() {
 	getRouter.HandleFunc("/payment", GetPayment)
 	getRouter.HandleFunc("/payments", GetPaymentsInPeriod)
 
+	getRouter.HandleFunc("/products", GetProducts)
+	getRouter.HandleFunc("/products/{id:[0-9]+}", GetProduct)
+
+
 	postRouter.HandleFunc("/payment", CreatePayment)
 	postRouter.HandleFunc("/validate", ValidateCard)
+
+	postRouter.HandleFunc("/products", CreateProduct)
+
+	postRouter.HandleFunc("/auth", Authenticate)
+	postRouter.HandleFunc("/register", Register)
 
 	opts := middleware.RedocOpts{SpecURL: "/swagger.yaml"}
 	sh := middleware.Redoc(opts, nil)

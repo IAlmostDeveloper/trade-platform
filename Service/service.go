@@ -1,9 +1,14 @@
 package service
 
 import (
+	"context"
+	"fmt"
+	"github.com/go-redis/redis"
 	"strconv"
 	"strings"
 )
+
+var JwtKey = []byte("3059a5e0-e543-11ea-9af4-b4b52f893c01")
 
 func SimpleLuhnCheck(cardNumber string) bool {
 	if len(cardNumber) != 16 {
@@ -24,4 +29,32 @@ func SimpleLuhnCheck(cardNumber string) bool {
 		}
 	}
 	return sum%10 == 0 && sum > 0
+}
+
+func GetIdFromPath(path string) int {
+	p := strings.Split(path, "/")
+	res, _ := strconv.Atoi(p[2])
+	return res
+}
+
+var ctx = context.Background()
+
+func WriteToken(token string){
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
+	rdb.Set(ctx, token, "Ok", 1000000000 * 10) // 10 seconds
+	rdb.Save(ctx)
+}
+
+func CheckToken(token string) bool {
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
+	fmt.Println(rdb.Get(ctx,token).String())
+	return  rdb.Get(ctx,token)!= nil
 }

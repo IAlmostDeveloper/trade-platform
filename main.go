@@ -1,8 +1,8 @@
 package main
 
 import (
-	dbaccess "payment-service/DBAccess"
-	requests "payment-service/Requests"
+	dbaccess "trade-platform/DBAccess"
+	requests "trade-platform/Requests"
 )
 
 func main() {

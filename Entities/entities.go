@@ -57,10 +57,10 @@ type UserCredentials struct {
 }
 
 type Product struct {
-	Id int `json:"id"`
-	Name string `json:"name"`
-	Key string `json:"key"`
-	Price int `json:"price"`
-	Commission int `json:"commission"`
-	OwnerId int `json:"owner_id"`
+	Id         int    `json:"id"`
+	Name       string `json:"name"`
+	Key        string `json:"key"`
+	Price      int    `json:"price"`
+	Commission int    `json:"commission"`
+	Owner      string `json:"owner"`
 }

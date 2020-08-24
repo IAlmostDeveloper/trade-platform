@@ -5,7 +5,6 @@ import (
 	"strings"
 )
 
-
 func SimpleLuhnCheck(cardNumber string) bool {
 	if len(cardNumber) != 16 {
 		return false

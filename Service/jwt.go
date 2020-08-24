@@ -27,13 +27,15 @@ func CreateToken(login string, expirationTime time.Time) (string, error) {
 func GetLoginFromToken(tokenString string) string {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			return nil, fmt.Errorf("Unexpected signing method")
 		}
 		return JwtKey, nil
 	})
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		fmt.Println(claims["login"])
+		result := fmt.Sprintf("%v", claims["login"])
+		return result
 	} else {
 		fmt.Println(err)
 	}
@@ -46,7 +48,7 @@ func WriteToken(token string){
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
-	rdb.Set(ctx, token, "Ok", 1000000000 * 10) // 10 seconds
+	rdb.Set(ctx, token, "Ok", 1000000000 * 60) // 10 seconds
 	rdb.Save(ctx)
 }
 
@@ -57,5 +59,6 @@ func CheckToken(token string) bool {
 		DB:       0,  // use default DB
 	})
 	fmt.Println(rdb.Get(ctx,token).String())
-	return  rdb.Get(ctx,token)!= nil
+	result := rdb.Get(ctx,token)
+	return  result.Val() == "Ok"
 }

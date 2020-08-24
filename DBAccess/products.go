@@ -17,7 +17,7 @@ func GetAllProducts() []entities.Product{
 	if result != nil {
 		for result.Next() {
 			var p entities.Product
-			err := result.Scan(&p.Id, &p.Name, &p.Key, &p.Price, &p.Commission, p.OwnerId)
+			err := result.Scan(&p.Id, &p.Name, &p.Key, &p.Price, &p.Commission, &p.Owner)
 			if err != nil {
 				fmt.Println(err)
 				continue
@@ -28,18 +28,18 @@ func GetAllProducts() []entities.Product{
 	return products
 }
 
-func GetOwnerProducts(ownerId int) []entities.Product {
+func GetOwnerProducts(owner string) []entities.Product {
 	db, err := sql.Open("sqlite3", "sqlite.db")
 	if err != nil {
 		panic(err)
 	}
 	defer db.Close()
-	result, err := db.Query("select * from products where owner_id=$1", ownerId)
+	result, err := db.Query("select * from products where owner=$1", owner)
 	var products []entities.Product
 	if result != nil {
 		for result.Next() {
 			var p entities.Product
-			err := result.Scan(&p.Id, &p.Name, &p.Key, &p.Price, &p.Commission, p.OwnerId)
+			err := result.Scan(&p.Id, &p.Name, &p.Key, &p.Price, &p.Commission, p.Owner)
 			if err != nil {
 				fmt.Println(err)
 				continue
@@ -60,7 +60,7 @@ func FindProductById(id int) entities.Product {
 	var p entities.Product
 	if result != nil {
 		for result.Next() {
-			err := result.Scan(&p.Id, &p.Name, &p.Key, &p.Price, &p.Commission, &p.OwnerId)
+			err := result.Scan(&p.Id, &p.Name, &p.Key, &p.Price, &p.Commission, &p.Owner)
 			if err != nil {
 				fmt.Println(err)
 				continue
@@ -80,7 +80,7 @@ func FindProductByName(name string) entities.Product {
 	var p entities.Product
 	if result != nil {
 		for result.Next() {
-			err := result.Scan(&p.Id, &p.Name, &p.Key, &p.Price, &p.Commission, &p.OwnerId)
+			err := result.Scan(&p.Id, &p.Name, &p.Key, &p.Price, &p.Commission, &p.Owner)
 			if err != nil {
 				fmt.Println(err)
 				continue
@@ -96,8 +96,8 @@ func InsertProduct(product entities.Product){
 		panic(err)
 	}
 	defer db.Close()
-	db.Query("insert into products(name, key, price, commission, owner_id) " +
-		"values($1,$2,$3,$4,$5)", product.Name, product.Key, product.Price, product.Commission, product.OwnerId)
+	db.Exec("insert into products(name, key, price, commission, owner) " +
+		"values($1,$2,$3,$4,$5)", product.Name, product.Key, product.Price, product.Commission, product.Owner)
 }
 
 func DeleteProduct(id int){
@@ -106,5 +106,5 @@ func DeleteProduct(id int){
 		panic(err)
 	}
 	defer db.Close()
-	db.Query("delete from products where id=$1", id)
+	db.Exec("delete from products where id=$1", id)
 }

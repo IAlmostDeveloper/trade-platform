@@ -5,12 +5,14 @@ import "github.com/dgrijalva/jwt-go"
 type Payment struct {
 	Sum     int    `json:"sum"`
 	Purpose string `json:"purpose"`
+	KeyId int `json:"key_id"`
 }
 
 type PaymentFromDB struct {
 	Id            int    `json:"id"`
 	Sum           int    `json:"sum"`
 	Purpose       string `json:"purpose"`
+	KeyId int `json:"key_id"`
 	SessionId     string `json:"session_id"`
 	CreatedTime   string `json:"created_time"`
 	CompletedTime string `json:"completed_time"`
@@ -75,4 +77,8 @@ type Product struct {
 
 type ProductInfo struct {
 	Name string `json:"name"`
+}
+
+type KeyIdJson struct {
+	KeyId int `json:"key_id"`
 }

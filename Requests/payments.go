@@ -61,6 +61,7 @@ func ValidateCard(w http.ResponseWriter, r *http.Request) {
 		payment := dbaccess.GetPayment(cardData.SessionId)
 		if payment.ExpireTime > time.Now().String() {
 			response.Error = ""
+			service.SendEmail()
 			dbaccess.MakePaymentComplete(cardData.SessionId, time.Now().Format("02-01-2006 15:04:05"), cardData.Number)
 		} else {
 			response.Error = "Payment time expired."

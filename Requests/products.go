@@ -65,8 +65,9 @@ func PurchaseProduct(w http.ResponseWriter, r *http.Request){
 			var productInfo entities.ProductInfo
 			json.NewDecoder(r.Body).Decode(&productInfo)
 			result := dbaccess.FindProductByName(productInfo.Name)
-			dbaccess.DeleteProduct(result.Id)
-			js, err := json.Marshal(result)
+			var keyId entities.KeyIdJson
+			keyId.KeyId = result.Id
+			js, err := json.Marshal(keyId)
 			if err!=nil{
 
 			}

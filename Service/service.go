@@ -31,3 +31,6 @@ func GetIdFromPath(path string) int {
 	res, _ := strconv.Atoi(p[2])
 	return res
 }
+
+func SendEmail(){
+}

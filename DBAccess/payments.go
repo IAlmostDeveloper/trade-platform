@@ -16,7 +16,7 @@ func GetPayment(session_id string) entities.PaymentFromDB {
 	var p entities.PaymentFromDB
 	if result != nil {
 		for result.Next() {
-			err := result.Scan(&p.Id, &p.Sum, &p.Purpose, &p.SessionId,
+			err := result.Scan(&p.Id, &p.Sum, &p.Purpose, &p.KeyId, &p.SessionId,
 				&p.CreatedTime, &p.CompletedTime, &p.ExpireTime, &p.Completed, &p.Card)
 			if err != nil {
 				fmt.Println(err)
@@ -37,7 +37,7 @@ func GetPaymentsInPeriod(from string, to string) []entities.PaymentFromDB {
 	var payments []entities.PaymentFromDB
 	for result.Next() {
 		var p entities.PaymentFromDB
-		err := result.Scan(&p.Id, &p.Sum, &p.Purpose, &p.SessionId,
+		err := result.Scan(&p.Id, &p.Sum, &p.Purpose, &p.SessionId, &p.KeyId,
 			&p.CreatedTime, &p.CompletedTime, &p.ExpireTime, &p.Completed, &p.Card)
 		if err != nil {
 			fmt.Println(err)
@@ -54,10 +54,10 @@ func InsertPayment(payment entities.Payment, session_id string, created_time str
 		panic(err)
 	}
 	defer db.Close()
-	db.Exec("insert into payments(sum, purpose, session_id, created_time," +
+	db.Exec("insert into payments(sum, purpose, key_id, session_id, created_time," +
 		"completed_time, expire_time, completed, card) "+
-		"values($1, $2, $3, $4, '', $5, false, '')",
-		payment.Sum, payment.Purpose, session_id, created_time, expire_time)
+		"values($1, $2, $3, $4, $5, '', $6, false, '')",
+		payment.Sum, payment.Purpose, payment.KeyId, session_id, created_time, expire_time)
 }
 
 func MakePaymentComplete(session_id string, completed_time string, card_number string) {

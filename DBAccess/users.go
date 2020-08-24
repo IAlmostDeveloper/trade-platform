@@ -36,7 +36,7 @@ func FindUserByLogin(login string) entities.UserCredentials{
 	var p entities.UserCredentials
 	if result != nil {
 		for result.Next() {
-			err := result.Scan(&p.Id, &p.Login, &p.Password)
+			err := result.Scan(&p.Id, &p.Login, &p.Email, &p.Password)
 			if err != nil {
 				fmt.Println(err)
 				continue
@@ -56,7 +56,7 @@ func FindUserByLoginAndPassword(user entities.AuthRequestJson) entities.UserCred
 	var p entities.UserCredentials
 	if result != nil {
 		for result.Next() {
-			err := result.Scan(&p.Id, &p.Login, &p.Password)
+			err := result.Scan(&p.Id, &p.Login, &p.Email, &p.Password)
 			if err != nil {
 				fmt.Println(err)
 				continue
@@ -66,11 +66,12 @@ func FindUserByLoginAndPassword(user entities.AuthRequestJson) entities.UserCred
 	return p
 }
 
-func InsertUser(user entities.AuthRequestJson){
+func InsertUser(user entities.RegRequestJson){
 	db, err := sql.Open("sqlite3", "sqlite.db")
 	if err != nil {
 		panic(err)
 	}
 	defer db.Close()
-	db.Exec("insert into users(login, password) values($1, $2)", user.Login, user.Password)
+	db.Exec("insert into users(login, email, password) values($1, $2, $3)",
+		user.Login, user.Email, user.Password)
 }

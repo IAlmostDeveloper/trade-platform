@@ -15,9 +15,10 @@ func Authenticate(w http.ResponseWriter, r *http.Request) {
 	user := dbaccess.FindUserByLoginAndPassword(request)
 	if user.Id == 0 {
 		http.Error(w, "Incorrect user data.", http.StatusUnauthorized)
+		return
 	}
 	expirationTime := time.Now().Add(5 * time.Minute)
-	tokenString, err := service.CreateToken(user.Login, expirationTime)
+	tokenString, err := service.CreateToken(user.Login, user.Email, expirationTime)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -31,7 +32,7 @@ func Authenticate(w http.ResponseWriter, r *http.Request) {
 }
 
 func Register(w http.ResponseWriter, r *http.Request) {
-	var user entities.AuthRequestJson
+	var user entities.RegRequestJson
 	json.NewDecoder(r.Body).Decode(&user)
 	if dbaccess.FindUserByLogin(user.Login).Id==0{
 		dbaccess.InsertUser(user)

@@ -31,6 +31,7 @@ func HandleRequests() {
 	postRouter.HandleFunc("/validate", ValidateCard)
 
 	postRouter.HandleFunc("/products", CreateProduct)
+	postRouter.HandleFunc("/purchase", PurchaseProduct)
 
 	postRouter.HandleFunc("/auth", Authenticate)
 	postRouter.HandleFunc("/register", Register)

@@ -45,14 +45,22 @@ type AuthRequestJson struct {
 	Password string `json:"password"`
 }
 
+type RegRequestJson struct{
+	Login string `json:"login"`
+	Email string `json:"email"`
+	Password string `json:"password"`
+}
+
 type Claims struct {
 	Login string `json:"login"`
+	Email string `json:"email"`
 	jwt.StandardClaims
 }
 
 type UserCredentials struct {
 	Id int `json:"id"`
 	Login string `json:"login"`
+	Email string `json:"email"`
 	Password string `json:"password"`
 }
 
@@ -63,4 +71,8 @@ type Product struct {
 	Price      int    `json:"price"`
 	Commission int    `json:"commission"`
 	Owner      string `json:"owner"`
+}
+
+type ProductInfo struct {
+	Name string `json:"name"`
 }

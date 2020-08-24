@@ -49,11 +49,28 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) {
 		if service.CheckToken(token.Value) {
 			var product entities.Product
 			json.NewDecoder(r.Body).Decode(&product)
-			owner := service.GetLoginFromToken(token.Value)
+			owner, _ := service.GetUserDataFromToken(token.Value)
 			product.Owner = owner
 			dbaccess.InsertProduct(product)
 			return
 		}
 	}
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+}
+
+func PurchaseProduct(w http.ResponseWriter, r *http.Request){
+	token, _ := r.Cookie("token")
+	if token != nil {
+		if service.CheckToken(token.Value) {
+			var productInfo entities.ProductInfo
+			json.NewDecoder(r.Body).Decode(&productInfo)
+			result := dbaccess.FindProductByName(productInfo.Name)
+			dbaccess.DeleteProduct(result.Id)
+			js, err := json.Marshal(result)
+			if err!=nil{
+
+			}
+			w.Write(js)
+		}
+	}
 }

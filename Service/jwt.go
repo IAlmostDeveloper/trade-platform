@@ -12,9 +12,10 @@ import (
 var JwtKey = []byte("3059a5e0-e543-11ea-9af4-b4b52f893c01")
 var ctx = context.Background()
 
-func CreateToken(login string, expirationTime time.Time) (string, error) {
+func CreateToken(login string, email string, expirationTime time.Time) (string, error) {
 	claims := entities.Claims{
 		Login: login,
+		Email: email,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 		},
@@ -24,7 +25,7 @@ func CreateToken(login string, expirationTime time.Time) (string, error) {
 	return tokenString, err
 }
 
-func GetLoginFromToken(tokenString string) string {
+func GetUserDataFromToken(tokenString string) (string, string) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method")
@@ -33,13 +34,13 @@ func GetLoginFromToken(tokenString string) string {
 	})
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		fmt.Println(claims["login"])
-		result := fmt.Sprintf("%v", claims["login"])
-		return result
+		login := fmt.Sprintf("%v", claims["login"])
+		email := fmt.Sprintf("%v", claims["email"])
+		return login, email
 	} else {
 		fmt.Println(err)
 	}
-	return ""
+	return "", ""
 }
 
 func WriteToken(token string){
@@ -58,7 +59,6 @@ func CheckToken(token string) bool {
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
-	fmt.Println(rdb.Get(ctx,token).String())
 	result := rdb.Get(ctx,token)
 	return  result.Val() == "Ok"
 }

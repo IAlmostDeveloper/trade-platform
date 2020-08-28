@@ -5,6 +5,6 @@
 	"rootPath": "trade-platform",
 	"heroku": {
         "install" : [ "./..." ],
-        "goVersion": "go1.6"
+        "goVersion": "go1.14"
          }
 }

@@ -1,1 +1,2 @@
-web: currency
+web: platform
+

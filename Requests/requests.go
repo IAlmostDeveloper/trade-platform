@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"os"
 )
 
 var key, _ = uuid.NewUUID()
@@ -46,5 +47,7 @@ func HandleRequests() {
 	methods := handlers.AllowedMethods([]string{"POST", "GET"})
 	headers := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
 
-	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(headers, methods, origins)(router)))
+	port := ":" + os.Getenv("PORT")
+
+	log.Fatal(http.ListenAndServe(port, handlers.CORS(headers, methods, origins)(router)))
 }

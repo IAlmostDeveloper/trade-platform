@@ -8,7 +8,10 @@ RUN go get -t github.com/go-redis/redis
 RUN go get -t github.com/google/uuid
 RUN go get -t github.com/gorilla/handlers
 RUN go get -t github.com/gorilla/mux
-RUN ln -s /go/src/trade-platform ~/pathToExec
-ENTRYPOINT cd /go/src/trade-platform && go run main.go
+RUN mkdir /app 
+ADD . /app/ 
+WORKDIR /app 
+RUN go build -o main . 
+CMD ["/app/main"]
 EXPOSE 8080
 

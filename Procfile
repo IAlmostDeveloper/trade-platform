@@ -1,2 +1,2 @@
-web: platform
+web: trade-platform
 

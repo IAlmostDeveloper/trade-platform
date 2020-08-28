@@ -2,5 +2,9 @@
 	"comment": "",
 	"ignore": "test",
 	"package": [],
-	"rootPath": "trade-platform"
+	"rootPath": "trade-platform",
+	"heroku": {
+        "install" : [ "./..." ],
+        "goVersion": "go1.6"
+         }
 }

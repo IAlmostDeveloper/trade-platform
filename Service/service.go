@@ -33,4 +33,9 @@ func GetIdFromPath(path string) int {
 }
 
 func SendEmail(){
+
+}
+
+func SendNotificationToOwner(){
+
 }

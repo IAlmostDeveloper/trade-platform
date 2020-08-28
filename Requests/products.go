@@ -69,9 +69,12 @@ func PurchaseProduct(w http.ResponseWriter, r *http.Request){
 			keyId.KeyId = result.Id
 			js, err := json.Marshal(keyId)
 			if err!=nil{
-
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
 			}
 			w.Write(js)
+			return
 		}
 	}
+	http.Error(w, "Unauthorized", http.StatusUnauthorized)
 }

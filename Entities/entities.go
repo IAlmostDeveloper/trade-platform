@@ -36,10 +36,12 @@ type CardData struct {
 	CVV        int    `json:"cvv"`
 	ExpireDate string `json:"expire_date"`
 	SessionId  string `json:"session_id"`
+	KeyId int `json:"key_id"`
 }
 
 type CardValidationResponse struct {
 	Error string `json:"error"`
+	Key string `json:"key"`
 }
 
 type AuthRequestJson struct {
@@ -81,4 +83,13 @@ type ProductInfo struct {
 
 type KeyIdJson struct {
 	KeyId int `json:"key_id"`
+}
+
+type Purchase struct{
+	Id int `json:"id"`
+	Name string `json:"name"`
+	Key string `json:"key"`
+	Date string `json:"date"`
+	Buyer string `json:"buyer"`
+	Owner string `json:"owner"`
 }

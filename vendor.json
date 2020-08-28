@@ -1,7 +1,0 @@
-{
-    "rootPath": "github.com/heroku/go-getting-started",
-    "heroku": {
-        "install" : [ "./..." ],
-        "goVersion": "go1.6"
-         },
-}

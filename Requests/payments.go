@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 	"net/http"
 	"time"
+	configs "trade-platform/Configs"
 	dbaccess "trade-platform/DBAccess"
 	entities "trade-platform/Entities"
 	service "trade-platform/Service"
@@ -42,8 +43,8 @@ func CreatePayment(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			dbaccess.InsertPayment(payment, id.String(), time.Now().Format("02-01-2006 15:04:05"),
-				time.Now().AddDate(0, 0, 7).Format("02-01-2006 15:04:05"))
+			dbaccess.InsertPayment(payment, id.String(), time.Now().Format(configs.DateTimeLayout),
+				time.Now().AddDate(0, 0, 7).Format(configs.DateTimeLayout))
 			w.Write(js)
 			return
 		}
@@ -83,12 +84,14 @@ func ValidateCard(w http.ResponseWriter, r *http.Request) {
 			var response entities.CardValidationResponse
 			if service.SimpleLuhnCheck(cardData.Number) {
 				payment := dbaccess.GetPayment(cardData.SessionId)
-				if payment.ExpireTime > time.Now().String() {
+				now := time.Now()
+				expire, _ := time.Parse(configs.DateTimeLayout, payment.ExpireTime)
+				if expire.After(now) {
 					response.Error = ""
-					response.Key = dbaccess.FindProductById(cardData.KeyId).Key
-					service.SendEmail()
+					response.Key = dbaccess.FindProductById(payment.KeyId).Key
+					service.SendEmail("davidkarp@ukr.net", response.Key)
 					service.SendNotificationToOwner()
-					dbaccess.MakePaymentComplete(cardData.SessionId, time.Now().Format("02-01-2006 15:04:05"), cardData.Number)
+					dbaccess.MakePaymentComplete(cardData.SessionId, time.Now().Format(configs.DateTimeLayout), cardData.Number)
 				} else {
 					response.Error = "Payment time expired."
 				}
@@ -103,6 +106,6 @@ func ValidateCard(w http.ResponseWriter, r *http.Request) {
 			w.Write(js)
 			return
 		}
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 	}
+	http.Error(w, "Unauthorized", http.StatusUnauthorized)
 }

@@ -36,7 +36,6 @@ type CardData struct {
 	CVV        int    `json:"cvv"`
 	ExpireDate string `json:"expire_date"`
 	SessionId  string `json:"session_id"`
-	KeyId int `json:"key_id"`
 }
 
 type CardValidationResponse struct {

@@ -48,6 +48,7 @@ func HandleRequests() {
 	headers := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
 
 	port := ":" + os.Getenv("PORT")
+	fmt.Println(port)
 
-	log.Fatal(http.ListenAndServe(port, handlers.CORS(headers, methods, origins)(router)))
+	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(headers, methods, origins)(router)))
 }

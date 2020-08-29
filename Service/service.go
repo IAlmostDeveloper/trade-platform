@@ -1,8 +1,11 @@
 package service
 
 import (
+	"fmt"
+	"net/smtp"
 	"strconv"
 	"strings"
+	configs "trade-platform/Configs"
 )
 
 func SimpleLuhnCheck(cardNumber string) bool {
@@ -32,10 +35,19 @@ func GetIdFromPath(path string) int {
 	return res
 }
 
-func SendEmail(){
-
+func SendEmail(customerEmail string, key string) {
+	auth := smtp.PlainAuth("", configs.SmtpClientEmail, "password", configs.SmtpClientHost)
+	to := []string{customerEmail}
+	msg := []byte("To: "+ customerEmail + "\r\n" +
+		"Subject: Trade platform!\r\n" +
+		"\r\n" +
+		"Thanks for your purchase! Here's your key: " + key + "\r\n")
+	err := smtp.SendMail(configs.SmtpClientAddress, auth, configs.SmtpClientEmail, to, msg)
+	if err != nil {
+		fmt.Println(err)
+	}
 }
 
-func SendNotificationToOwner(){
+func SendNotificationToOwner() {
 
 }

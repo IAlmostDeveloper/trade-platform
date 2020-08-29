@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/go-redis/redis"
+	"net/http"
 	"time"
 	configs "trade-platform/Configs"
 	entities "trade-platform/Entities"
@@ -59,4 +60,11 @@ func CheckToken(token string) bool {
 	})
 	result := rdb.Get(configs.RedisContext,token)
 	return  result.Val() == "Ok"
+}
+
+func AuthorizeUser(token *http.Cookie, err error) bool{
+	if token != nil {
+		return CheckToken(token.Value)
+	}
+	return false
 }

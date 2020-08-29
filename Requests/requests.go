@@ -3,7 +3,6 @@ package requests
 import (
 	"fmt"
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/google/uuid"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"log"
@@ -11,11 +10,8 @@ import (
 	"os"
 )
 
-var key, _ = uuid.NewUUID()
-
 func HandleRequests() {
-	fmt.Println("Server started successfully. Here's admin key:")
-	fmt.Println(key.String())
+	fmt.Println("Server started successfully.")
 	router := mux.NewRouter()
 
 	getRouter := router.Methods(http.MethodGet).Subrouter()

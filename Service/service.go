@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 	configs "trade-platform/Configs"
+	dbaccess "trade-platform/DBAccess"
 )
 
 func SimpleLuhnCheck(cardNumber string) bool {
@@ -50,4 +51,8 @@ func SendEmail(customerEmail string, key string) {
 
 func SendNotificationToOwner() {
 
+}
+
+func SendCommissionToPlatform(commissionSum float32){
+	dbaccess.AddPaymentCommission(commissionSum)
 }

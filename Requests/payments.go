@@ -65,17 +65,19 @@ func GetPaymentsInPeriod(w http.ResponseWriter, r *http.Request) {
 func ValidateCard(w http.ResponseWriter, r *http.Request) {
 	if service.AuthorizeUser(r.Cookie("token")) {
 		var cardData entities.CardData
-		json.NewDecoder(r.Body).Decode(&cardData)
 		var response entities.CardValidationResponse
+		json.NewDecoder(r.Body).Decode(&cardData)
 		if service.SimpleLuhnCheck(cardData.Number) {
 			payment := dbaccess.GetPayment(cardData.SessionId)
 			now := time.Now()
 			expire, _ := time.Parse(configs.DateTimeLayout, payment.ExpireTime)
 			if expire.After(now) {
+				product := dbaccess.FindProductById(payment.KeyId)
 				response.Error = ""
-				response.Key = dbaccess.FindProductById(payment.KeyId).Key
+				response.Key = product.Key
 				service.SendEmail("davidkarp@ukr.net", response.Key)
 				service.SendNotificationToOwner()
+				service.SendCommissionToPlatform(float32(product.Price) * float32(product.Commission) / 100.0)
 				dbaccess.MakePaymentComplete(cardData.SessionId, time.Now().Format(configs.DateTimeLayout), cardData.Number)
 			} else {
 				response.Error = "Payment time expired."

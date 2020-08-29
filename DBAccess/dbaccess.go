@@ -20,4 +20,8 @@ func CreateDB() {
 		"name text, key text unique, date text, buyer text, owner text)")
 	db.Exec("create table if not exists products(id integer primary key autoincrement, " +
 		"name text, key text unique, price integer, commission integer, owner text)")
+
+	db.Exec("create table if not exists platform(id integer primary key autoincrement, " +
+		"key text unique, value text)")
+	db.Exec("insert or ignore into platform(key, value) values('balance', '0');")
 }

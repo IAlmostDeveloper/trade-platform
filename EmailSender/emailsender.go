@@ -11,11 +11,10 @@ import (
 	entities "trade-platform/Entities"
 )
 
+var conn, _ = amqp.Dial("amqp://guest:guest@localhost:5672/")
+var ch, _ = conn.Channel()
+
 func Start() {
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
-	failOnError(err, "Error opening connection")
-	ch, err := conn.Channel()
-	failOnError(err, "Error opening channel")
 	defer conn.Close()
 	defer ch.Close()
 
@@ -29,47 +28,21 @@ func Start() {
 		nil,             // arguments
 	)
 	ch.QueueDeclare(
-		"emails", // name
-		true,     // durable
-		false,    // delete when unused
-		false,    // exclusive
-		false,    // no-wait
-		nil,      // arguments
-	)
+		"emails", true, false, false, false, nil)
 	ch.QueueBind(
-		"emails",
-		"emails",
-		"emails_direct",
-		false, nil)
-	ch.QueueDeclare("emails_delayed",
-		true,
-		false,
-		false,
-		false,
+		"emails", "emails", "emails_direct", false, nil)
+	ch.QueueDeclare("emails_delayed", true, false, false, false,
 		map[string]interface{}{
 			"x-message-ttl":             60000,
 			"x-dead-letter-exchange":    "emails_direct",
 			"x-dead-letter-routing-key": "emails",
 		})
-	ch.QueueBind(
-		"emails_delayed",
-		"emails_delayed",
-		"emails_direct",
-		false, nil)
+	ch.QueueBind("emails_delayed", "emails_delayed", "emails_direct", false, nil)
 
-	msgs, err := ch.Consume(
-		"emails", // queue
-		"",       // consumer
-		true,     // auto-ack
-		false,    // exclusive
-		false,    // no-local
-		false,    // no-wait
-		nil,      // args
-	)
+	msgs, err := ch.Consume("emails", "", true, false, false, false, nil)
 	failOnError(err, "Failed to register a consumer")
 
 	forever := make(chan bool)
-
 	go func() {
 		for d := range msgs {
 			log.Printf("Received a message: %s", d.Body)
@@ -106,15 +79,8 @@ func SendEmail(customerEmail string, key string) bool {
 }
 
 func SendEmailToDelayQueue(content entities.EmailContent) {
-	var conn, _ = amqp.Dial("amqp://guest:guest@localhost:5672/")
-	var ch, _ = conn.Channel()
-	defer conn.Close()
-	defer ch.Close()
 	body, _ := json.Marshal(content)
-	ch.Publish("emails_direct",
-		"emails_delayed",
-		false,
-		false,
+	ch.Publish("emails_direct", "emails_delayed", false, false,
 		amqp.Publishing{
 			ContentType: "text/plain",
 			Body:        body,
@@ -122,21 +88,10 @@ func SendEmailToDelayQueue(content entities.EmailContent) {
 }
 
 func SendEmailMessage(customerEmail string, key string) {
-	fmt.Println("sending message")
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
-	failOnError(err, "Connection is not opened")
-	ch, err := conn.Channel()
-	failOnError(err, "Channel is not opened")
-	defer conn.Close()
-	defer ch.Close()
 	var emailContent = entities.EmailContent{CustomerEmail: customerEmail, GameKey: key}
 	body, err := json.Marshal(emailContent)
 	failOnError(err, "Unable to marshall")
-	err = ch.Publish(
-		"emails_direct", // exchange
-		"emails",        // routing key
-		false,           // mandatory
-		false,           // immediate
+	err = ch.Publish("emails_direct", "emails", false, false,
 		amqp.Publishing{
 			ContentType: "text/plain",
 			Body:        body,

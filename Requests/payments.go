@@ -38,8 +38,8 @@ func CreatePayment(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		dbaccess.InsertPayment(payment, id.String(), time.Now().Format(configs.DateTimeLayout),
-			time.Now().AddDate(0, 0, 7).Format(configs.DateTimeLayout))
+		dbaccess.InsertPayment(payment, id.String(), time.Now(),
+			time.Now().AddDate(0, 0, 7))
 		w.Write(js)
 		return
 	}
@@ -50,7 +50,9 @@ func GetPaymentsInPeriod(w http.ResponseWriter, r *http.Request) {
 	if service.AuthorizeUser(r.Cookie("token")) {
 		var period entities.Period
 		json.NewDecoder(r.Body).Decode(&period)
-		response := dbaccess.GetPaymentsInPeriod(period.From, period.To)
+		from, _ := time.Parse(configs.DateTimeLayout, period.From)
+		to, _ := time.Parse(configs.DateTimeLayout, period.To)
+		response := dbaccess.GetPaymentsInPeriod(from, to)
 		js, err := json.Marshal(response)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -73,7 +75,7 @@ func ValidateCard(w http.ResponseWriter, r *http.Request) {
 			if service.PaymentNotExpired(payment.ExpireTime) {
 				product := dbaccess.FindProductById(payment.KeyId)
 				customerLogin, customerEmail := service.GetLoginAndEmailFromToken(token.Value)
-				dbaccess.MakePaymentComplete(cardData.SessionId, time.Now().Format(configs.DateTimeLayout), cardData.Number)
+				dbaccess.MakePaymentComplete(cardData.SessionId, time.Now(), cardData.Number)
 				dbaccess.DeleteProduct(product.Id)
 
 				commissionSum := service.SendCommissionToPlatform(product)

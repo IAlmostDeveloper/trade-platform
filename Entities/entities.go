@@ -14,9 +14,9 @@ type PaymentFromDB struct {
 	Purpose       string `json:"purpose"`
 	KeyId int `json:"key_id"`
 	SessionId     string `json:"session_id"`
-	CreatedTime   string `json:"created_time"`
-	CompletedTime string `json:"completed_time"`
-	ExpireTime    string `json:"expire_time"`
+	CreatedTime   int64 `json:"created_time"`
+	CompletedTime int64 `json:"completed_time"`
+	ExpireTime    int64 `json:"expire_time"`
 	Completed     bool   `json:"completed"`
 	Card          string `json:"card"`
 }

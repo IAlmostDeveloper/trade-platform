@@ -41,10 +41,8 @@ func GetIdFromPath(path string) int {
 	return res
 }
 
-func PaymentNotExpired(expireTime string) bool{
-	now := time.Now()
-	expire, _ := time.Parse(configs.DateTimeLayout, expireTime)
-	return expire.After(now)
+func PaymentNotExpired(expireTime int64) bool{
+	return expireTime > time.Now().Unix()
 }
 
 func SendEmail(customerEmail string, key string) {

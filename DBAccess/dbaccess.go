@@ -14,8 +14,8 @@ func CreateDB() {
 	db.Exec("create table if not exists users(id integer primary key autoincrement, " +
 		"login text unique, email text unique, domain text, password text)")
 	db.Exec("create table if not exists payments(id integer primary key autoincrement," +
-		"sum integer, purpose text, key_id integer, session_id text, created_time text," +
-		"completed_time text, expire_time text, completed numeric, card text)")
+		"sum integer, purpose text, key_id integer, session_id text, created_time integer," +
+		"completed_time integer, expire_time integer, completed numeric, card text)")
 	db.Exec("create table if not exists purchases(id integer primary key autoincrement, " +
 		"name text, key text unique, date text, buyer text, owner text)")
 	db.Exec("create table if not exists products(id integer primary key autoincrement, " +

@@ -75,13 +75,16 @@ func ValidateCard(w http.ResponseWriter, r *http.Request) {
 				customerLogin, customerEmail := service.GetLoginAndEmailFromToken(token.Value)
 				dbaccess.MakePaymentComplete(cardData.SessionId, time.Now().Format(configs.DateTimeLayout), cardData.Number)
 				dbaccess.DeleteProduct(product.Id)
-				
+
 				commissionSum := service.SendCommissionToPlatform(product)
 				purchaseInfo := entities.PurchaseInfo{GameName: product.Name, Buyer: customerLogin,
 					PaymentSessionId: payment.SessionId, CommissionSum: commissionSum,
+					OwnerIncome: float32(product.Price) - commissionSum,
 				}
 				service.SendEmail(customerEmail, response.Key)
-				service.SendNotificationToOwner(purchaseInfo)
+
+				domain := dbaccess.FindUserByLogin(product.Owner).Domain
+				service.SendNotificationToOwner(domain, purchaseInfo)
 
 				response = entities.CardValidationResponse{Error: "", Key: product.Key}
 			} else {

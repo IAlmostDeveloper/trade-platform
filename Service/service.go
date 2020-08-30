@@ -1,7 +1,10 @@
 package service
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"net/smtp"
 	"strconv"
 	"strings"
@@ -57,8 +60,9 @@ func SendEmail(customerEmail string, key string) {
 	}
 }
 
-func SendNotificationToOwner(purchaseInfo entities.PurchaseInfo) {
-
+func SendNotificationToOwner(domain string, purchaseInfo entities.PurchaseInfo) {
+	requestBody, _ := json.Marshal(purchaseInfo)
+	http.Post(domain, "application/json", bytes.NewBuffer(requestBody))
 }
 
 func SendCommissionToPlatform(product entities.Product) float32{

@@ -51,6 +51,7 @@ type AuthRequestJson struct {
 type RegRequestJson struct{
 	Login string `json:"login"`
 	Email string `json:"email"`
+	Domain string `json:"domain"`
 	Password string `json:"password"`
 }
 
@@ -64,6 +65,7 @@ type UserCredentials struct {
 	Id int `json:"id"`
 	Login string `json:"login"`
 	Email string `json:"email"`
+	Domain string `json:"domain"`
 	Password string `json:"password"`
 }
 
@@ -98,4 +100,5 @@ type PurchaseInfo struct {
 	Buyer string `json:"buyer"`
 	PaymentSessionId string `json:"payment_session_id"`
 	CommissionSum float32 `json:"commission_sum"`
+	OwnerIncome float32 `json:"owner_income"`
 }

@@ -29,7 +29,7 @@ func FindUserByLogin(login string) entities.UserCredentials{
 	var p entities.UserCredentials
 	if result != nil {
 		for result.Next() {
-			err := result.Scan(&p.Id, &p.Login, &p.Email, &p.Password)
+			err := result.Scan(&p.Id, &p.Login, &p.Email, &p.Domain, &p.Password)
 			if err != nil {
 				fmt.Println(err)
 				continue
@@ -46,7 +46,7 @@ func FindUserByLoginAndPassword(user entities.AuthRequestJson) entities.UserCred
 	var p entities.UserCredentials
 	if result != nil {
 		for result.Next() {
-			err := result.Scan(&p.Id, &p.Login, &p.Email, &p.Password)
+			err := result.Scan(&p.Id, &p.Login, &p.Email, &p.Domain, &p.Password)
 			if err != nil {
 				fmt.Println(err)
 				continue
@@ -59,6 +59,6 @@ func FindUserByLoginAndPassword(user entities.AuthRequestJson) entities.UserCred
 func InsertUser(user entities.RegRequestJson){
 	db := OpenDB()
 	defer db.Close()
-	db.Exec("insert into users(login, email, password) values($1, $2, $3)",
-		user.Login, user.Email, user.Password)
+	db.Exec("insert into users(login, email, domain, password) values($1, $2, $3, $4)",
+		user.Login, user.Email, user.Domain, user.Password)
 }

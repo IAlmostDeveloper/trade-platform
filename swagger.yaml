@@ -4,6 +4,124 @@ info:
   description: Service for making payments by credit card
   version: 1.0.0
 paths:
+  /auth:
+    post:
+      summary: Performs login to gain platform access
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignInData'
+            example:
+              login: user
+              password: password123
+      responses:
+        '200':
+          description: Successful login
+        '401':
+          description: Incorrect user data
+  /register:
+    post:
+      summary: Performs user registration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignUpData'
+            example:
+              login: user
+              email: user@email.com
+              domain: user.domain.com
+              password: password123
+      responses:
+        '200':
+          description: Successful registration
+        '400':
+          description: This user are already exists
+  /products:
+    get:
+      summary: Gets all products available on platform
+      responses:
+        '200':
+          description: Products JSON array
+          content:
+            application/json:
+              schema:
+                type: array
+              example:
+                - {
+                  "id": 2,
+                  "name": "the last of us",
+                  "key": "an11s-asas0-sn1sj-ja719",
+                  "price": 50,
+                  "commission": 5,
+                  "owner": "davidka"
+                }
+                - {
+                  "id": 3,
+                  "name": "the last of us 2",
+                  "key": "an11s-asdah-wowps-28jsa",
+                  "price": 60,
+                  "commission": 7,
+                  "owner": "davidka"
+                }
+        '401':
+          description: Unauthorized
+    post:
+      summary: Creates new product and adds it to platform
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              name: The last of us
+              key: an11s-asdah-wowps-28jsa
+              price: 60
+              commission: 7
+      responses:
+        '200':
+          description: Successfully added
+        '401':
+          description: Unauthorized
+  /products/{product_id}:
+    get:
+      summary: Gets product with exact product_id
+      responses:
+        '200':
+          description: Product JSON object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+              example:
+                id: 2,
+                name: the last of us
+                key: an11s-asas0-sn1sj-ja719
+                price: 50
+                commission: 5
+                owner: user
+        '401':
+          description: Unauthorized
+  /purchase:
+    post:
+      summary: Creates request to buy a product, returns key_id for payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              name: The last of us
+      responses:
+        '200':
+          description: Successful request
+          content:
+            application/json:
+              example:
+                key_id: 12
+        '401':
+          description: Unauthorized
   /payment:
     get:
       summary: Gets payment by session_id
@@ -26,12 +144,15 @@ paths:
                 id: 42
                 sum: 50000
                 purpose: An example payment
+                key_id: 12
                 session_id: ecef274b-c4d9-11ea-9c98-16e54378dfba
                 created_time: 16-07-2020 00:00:00
                 completed_time: 18-07-2020 00:00:00
                 expire_time: 23-07-2020 00:00:00
                 completed: true
                 card: "4561261212345467"
+        '401':
+          description: "Unauthorized"
     post:
       summary: Creates payment and returns session_id
       requestBody:
@@ -43,6 +164,7 @@ paths:
             example:
               sum: 50000
               purpose: An example payment
+              key_id: 12
       responses:
         '200':    # status code
           description: A payment JSON object
@@ -52,6 +174,8 @@ paths:
                 $ref: '#/components/schemas/SessionId'
               example:
                 session_id: ecef274b-c4d9-11ea-9c98-16e54378dfba
+        '401':
+          description: "Unauthorized"
   /payments:
     get:
       summary: Gets payments in some date period
@@ -80,30 +204,34 @@ paths:
                 type: array
               example:
                 - {
-                  "id": 2,
-                  "sum": 20000,
-                  "purpose": "Freelance salary",
-                  "session_id": "0403703f-c741-11ea-b0d2-16e54378dfba",
-                  "created_time": "16-07-2020 11:47:44",
-                  "completed_time": "17-07-2020 11:55:55",
-                  "expire_time": "23-07-2020 11:47:44",
+                  "id": 1,
+                  "sum": 50,
+                  "purpose": "Game key purchase",
+                  "key_id": 1,
+                  "session_id": "9f8ee1e3-ea7f-11ea-ac2c-b4b52f893c01",
+                  "created_time": 1598764444,
+                  "completed_time": 1598764458,
+                  "expire_time": 1599369244,
                   "completed": true,
                   "card": "4561261212345467"
                 }
                 -  {
-                  "id": 5,
-                  "sum": 20000,
-                  "purpose": "Freelance salary",
-                  "session_id": "7b3651f3-c7ea-11ea-b96f-16e54378dfba",
-                  "created_time": "17-07-2020 08:00:49",
-                  "completed_time": "17-07-2020 08:03:16",
-                  "expire_time": "24-07-2020 08:00:49",
-                  "completed": true,
-                  "card": "4561236545233218"
+                  "id": 2,
+                  "sum": 50,
+                  "purpose": "Game key purchase",
+                  "key_id": 1,
+                  "session_id": "c3173483-ea81-11ea-89d3-b4b52f893c01",
+                  "created_time": 1598765363,
+                  "completed_time": 0,
+                  "expire_time": 1599370163,
+                  "completed": false,
+                  "card": ""
                 }
+        '401':
+          description: "Unauthorized"
   /validate:
     post:
-      summary: Validates card and makes payment completed
+      summary: Validates card and makes payment completed, returns key
       requestBody:
         required: true
         content:
@@ -118,13 +246,16 @@ paths:
               session_id: ecef274b-c4d9-11ea-9c98-16e54378dfba
       responses:
         '200':    # status code
-          description: A payment JSON object
+          description: Successful validation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ValidationResponse'
               example:
                 error: ""
+                key: "an11s-asas0-sn1sj-ja719"
+        '401':
+          description: "Unauthorized"
 components:
   schemas:
     SessionId:
@@ -146,6 +277,8 @@ components:
           type: integer
         purpose:
           type: string
+        key_id:
+          type: integer
         session_id:
           type: string
         created_time:
@@ -188,9 +321,41 @@ components:
           type: string
         session_id:
           type: string
-    Error:
-      title: error object
+    ValidationResponse:
+      title: validation response object
       type: object
       properties:
         error:
           type: string
+        key:
+          type: string
+    SignInData:
+      title: user credentials for signing in
+      type: object
+      properties:
+        login:
+          type: string
+        password:
+          type: string
+    SignUpData:
+      title: user credentials for signing up
+      type: object
+      properties:
+        login:
+          type: string
+        email:
+          type: string
+        domain:
+          type: string
+        password:
+          type: string
+    Product:
+      title: product json object
+      type: object
+      properties:
+        id: integer
+        name: string
+        key: string
+        price: integer
+        commission: integer
+        owner: string

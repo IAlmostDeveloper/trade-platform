@@ -5,8 +5,10 @@ import (
 	"net/smtp"
 	"strconv"
 	"strings"
+	"time"
 	configs "trade-platform/Configs"
 	dbaccess "trade-platform/DBAccess"
+	entities "trade-platform/Entities"
 )
 
 func SimpleLuhnCheck(cardNumber string) bool {
@@ -36,6 +38,12 @@ func GetIdFromPath(path string) int {
 	return res
 }
 
+func PaymentNotExpired(expireTime string) bool{
+	now := time.Now()
+	expire, _ := time.Parse(configs.DateTimeLayout, expireTime)
+	return expire.After(now)
+}
+
 func SendEmail(customerEmail string, key string) {
 	auth := smtp.PlainAuth("", configs.SmtpClientEmail, "password", configs.SmtpClientHost)
 	to := []string{customerEmail}
@@ -49,10 +57,12 @@ func SendEmail(customerEmail string, key string) {
 	}
 }
 
-func SendNotificationToOwner() {
+func SendNotificationToOwner(purchaseInfo entities.PurchaseInfo) {
 
 }
 
-func SendCommissionToPlatform(commissionSum float32){
+func SendCommissionToPlatform(product entities.Product) float32{
+	commissionSum := float32(product.Price) * float32(product.Commission) / 100
 	dbaccess.AddPaymentCommission(commissionSum)
+	return commissionSum
 }

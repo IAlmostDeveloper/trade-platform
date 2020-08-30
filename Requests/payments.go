@@ -63,22 +63,27 @@ func GetPaymentsInPeriod(w http.ResponseWriter, r *http.Request) {
 }
 
 func ValidateCard(w http.ResponseWriter, r *http.Request) {
-	if service.AuthorizeUser(r.Cookie("token")) {
+	token, err := r.Cookie("token")
+	if service.AuthorizeUser(token, err) {
 		var cardData entities.CardData
 		var response entities.CardValidationResponse
 		json.NewDecoder(r.Body).Decode(&cardData)
 		if service.SimpleLuhnCheck(cardData.Number) {
 			payment := dbaccess.GetPayment(cardData.SessionId)
-			now := time.Now()
-			expire, _ := time.Parse(configs.DateTimeLayout, payment.ExpireTime)
-			if expire.After(now) {
+			if service.PaymentNotExpired(payment.ExpireTime) {
 				product := dbaccess.FindProductById(payment.KeyId)
-				response.Error = ""
-				response.Key = product.Key
-				service.SendEmail("davidkarp@ukr.net", response.Key)
-				service.SendNotificationToOwner()
-				service.SendCommissionToPlatform(float32(product.Price) * float32(product.Commission) / 100.0)
+				customerLogin, customerEmail := service.GetLoginAndEmailFromToken(token.Value)
 				dbaccess.MakePaymentComplete(cardData.SessionId, time.Now().Format(configs.DateTimeLayout), cardData.Number)
+				dbaccess.DeleteProduct(product.Id)
+				
+				commissionSum := service.SendCommissionToPlatform(product)
+				purchaseInfo := entities.PurchaseInfo{GameName: product.Name, Buyer: customerLogin,
+					PaymentSessionId: payment.SessionId, CommissionSum: commissionSum,
+				}
+				service.SendEmail(customerEmail, response.Key)
+				service.SendNotificationToOwner(purchaseInfo)
+
+				response = entities.CardValidationResponse{Error: "", Key: product.Key}
 			} else {
 				response.Error = "Payment time expired."
 			}

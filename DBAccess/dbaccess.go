@@ -25,3 +25,11 @@ func CreateDB() {
 		"key text unique, value text)")
 	db.Exec("insert or ignore into platform(key, value) values('balance', '0');")
 }
+
+func OpenDB() *sql.DB {
+	db, err := sql.Open("sqlite3", "sqlite.db")
+	if err != nil {
+		panic(err)
+	}
+	return db
+}

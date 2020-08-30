@@ -1,18 +1,14 @@
 package dbaccess
 
 import (
-	"database/sql"
 	"fmt"
 	entities "trade-platform/Entities"
 )
 
 func FindUserById(id int) entities.UserCredentials {
-	db, err := sql.Open("sqlite3", "sqlite.db")
-	if err != nil {
-		panic(err)
-	}
+	db := OpenDB()
 	defer db.Close()
-	result, err := db.Query("select * from users where id=$1", id)
+	result, _ := db.Query("select * from users where id=$1", id)
 	var p entities.UserCredentials
 	if result != nil {
 		for result.Next() {
@@ -27,12 +23,9 @@ func FindUserById(id int) entities.UserCredentials {
 }
 
 func FindUserByLogin(login string) entities.UserCredentials{
-	db, err := sql.Open("sqlite3", "sqlite.db")
-	if err != nil {
-		panic(err)
-	}
+	db := OpenDB()
 	defer db.Close()
-	result, err := db.Query("select * from users where login=$1", login)
+	result, _ := db.Query("select * from users where login=$1", login)
 	var p entities.UserCredentials
 	if result != nil {
 		for result.Next() {
@@ -47,12 +40,9 @@ func FindUserByLogin(login string) entities.UserCredentials{
 }
 
 func FindUserByLoginAndPassword(user entities.AuthRequestJson) entities.UserCredentials {
-	db, err := sql.Open("sqlite3", "sqlite.db")
-	if err != nil {
-		panic(err)
-	}
+	db := OpenDB()
 	defer db.Close()
-	result, err := db.Query("select * from users where login=$1 and password=$2", user.Login, user.Password)
+	result, _ := db.Query("select * from users where login=$1 and password=$2", user.Login, user.Password)
 	var p entities.UserCredentials
 	if result != nil {
 		for result.Next() {
@@ -67,10 +57,7 @@ func FindUserByLoginAndPassword(user entities.AuthRequestJson) entities.UserCred
 }
 
 func InsertUser(user entities.RegRequestJson){
-	db, err := sql.Open("sqlite3", "sqlite.db")
-	if err != nil {
-		panic(err)
-	}
+	db := OpenDB()
 	defer db.Close()
 	db.Exec("insert into users(login, email, password) values($1, $2, $3)",
 		user.Login, user.Email, user.Password)

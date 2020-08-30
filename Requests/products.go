@@ -42,7 +42,7 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) {
 	if service.AuthorizeUser(token, err) {
 			var product entities.Product
 			json.NewDecoder(r.Body).Decode(&product)
-			owner, _ := service.GetUserDataFromToken(token.Value)
+			owner, _ := service.GetLoginAndEmailFromToken(token.Value)
 			product.Owner = owner
 			dbaccess.InsertProduct(product)
 			return

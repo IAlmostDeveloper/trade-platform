@@ -23,7 +23,7 @@ func CreateToken(login string, email string, expirationTime time.Time) (string, 
 	return tokenString, err
 }
 
-func GetUserDataFromToken(tokenString string) (string, string) {
+func GetLoginAndEmailFromToken(tokenString string) (string, string) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method")

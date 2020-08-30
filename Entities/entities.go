@@ -92,3 +92,10 @@ type Purchase struct{
 	Buyer string `json:"buyer"`
 	Owner string `json:"owner"`
 }
+
+type PurchaseInfo struct {
+	GameName string `json:"game_name"`
+	Buyer string `json:"buyer"`
+	PaymentSessionId string `json:"payment_session_id"`
+	CommissionSum float32 `json:"commission_sum"`
+}

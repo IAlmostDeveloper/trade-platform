@@ -1,18 +1,14 @@
 package dbaccess
 
 import (
-	"database/sql"
 	"fmt"
 	entities "trade-platform/Entities"
 )
 
 func GetAllProducts() []entities.Product{
-	db, err := sql.Open("sqlite3", "sqlite.db")
-	if err != nil {
-		panic(err)
-	}
+	db := OpenDB()
 	defer db.Close()
-	result, err := db.Query("select * from products")
+	result, _ := db.Query("select * from products")
 	var products []entities.Product
 	if result != nil {
 		for result.Next() {
@@ -29,12 +25,9 @@ func GetAllProducts() []entities.Product{
 }
 
 func GetOwnerProducts(owner string) []entities.Product {
-	db, err := sql.Open("sqlite3", "sqlite.db")
-	if err != nil {
-		panic(err)
-	}
+	db := OpenDB()
 	defer db.Close()
-	result, err := db.Query("select * from products where owner=$1", owner)
+	result, _ := db.Query("select * from products where owner=$1", owner)
 	var products []entities.Product
 	if result != nil {
 		for result.Next() {
@@ -51,12 +44,9 @@ func GetOwnerProducts(owner string) []entities.Product {
 }
 
 func FindProductById(id int) entities.Product {
-	db, err := sql.Open("sqlite3", "sqlite.db")
-	if err != nil {
-		panic(err)
-	}
+	db := OpenDB()
 	defer db.Close()
-	result, err := db.Query("select * from products where id=$1", id)
+	result, _ := db.Query("select * from products where id=$1", id)
 	var p entities.Product
 	if result != nil {
 		for result.Next() {
@@ -71,12 +61,9 @@ func FindProductById(id int) entities.Product {
 }
 
 func FindProductByName(name string) entities.Product {
-	db, err := sql.Open("sqlite3", "sqlite.db")
-	if err != nil {
-		panic(err)
-	}
+	db := OpenDB()
 	defer db.Close()
-	result, err := db.Query("select * from products where name=$1 limit 1", name)
+	result, _ := db.Query("select * from products where name=$1 limit 1", name)
 	var p entities.Product
 	if result != nil {
 		for result.Next() {
@@ -91,20 +78,14 @@ func FindProductByName(name string) entities.Product {
 }
 
 func InsertProduct(product entities.Product){
-	db, err := sql.Open("sqlite3", "sqlite.db")
-	if err != nil {
-		panic(err)
-	}
+	db := OpenDB()
 	defer db.Close()
 	db.Exec("insert into products(name, key, price, commission, owner) " +
 		"values($1,$2,$3,$4,$5)", product.Name, product.Key, product.Price, product.Commission, product.Owner)
 }
 
 func DeleteProduct(id int){
-	db, err := sql.Open("sqlite3", "sqlite.db")
-	if err != nil {
-		panic(err)
-	}
+	db := OpenDB()
 	defer db.Close()
 	db.Exec("delete from products where id=$1", id)
 }

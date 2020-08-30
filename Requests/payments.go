@@ -2,11 +2,7 @@ package requests
 
 import (
 	"encoding/json"
-	"github.com/google/uuid"
 	"net/http"
-	"time"
-	configs "trade-platform/Configs"
-	dbaccess "trade-platform/DBAccess"
 	entities "trade-platform/Entities"
 	service "trade-platform/Service"
 )
@@ -15,10 +11,9 @@ func GetPayment(w http.ResponseWriter, r *http.Request) {
 	if service.AuthorizeUser(r.Cookie("token")) {
 		var paymentResponse entities.PaymentSession
 		json.NewDecoder(r.Body).Decode(&paymentResponse)
-		payment := dbaccess.GetPayment(paymentResponse.SessionId)
-		js, err := json.Marshal(payment)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		js := service.GetPayment(paymentResponse)
+		if js == nil{
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
 		w.Write(js)
@@ -31,15 +26,10 @@ func CreatePayment(w http.ResponseWriter, r *http.Request) {
 	if service.AuthorizeUser(r.Cookie("token")) {
 		var payment entities.Payment
 		json.NewDecoder(r.Body).Decode(&payment)
-		id, err := uuid.NewUUID()
-		response := entities.PaymentSession{SessionId: id.String()}
-		js, err := json.Marshal(response)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+		js := service.CreatePayment(payment)
+		if js == nil{
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
 		}
-		dbaccess.InsertPayment(payment, id.String(), time.Now(),
-			time.Now().AddDate(0, 0, 7))
 		w.Write(js)
 		return
 	}
@@ -50,13 +40,9 @@ func GetPaymentsInPeriod(w http.ResponseWriter, r *http.Request) {
 	if service.AuthorizeUser(r.Cookie("token")) {
 		var period entities.Period
 		json.NewDecoder(r.Body).Decode(&period)
-		from, _ := time.Parse(configs.DateTimeLayout, period.From)
-		to, _ := time.Parse(configs.DateTimeLayout, period.To)
-		response := dbaccess.GetPaymentsInPeriod(from, to)
-		js, err := json.Marshal(response)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+		js := service.GetPaymentsInPeriod(period)
+		if js == nil {
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
 		}
 		w.Write(js)
 		return
@@ -68,38 +54,14 @@ func ValidateCard(w http.ResponseWriter, r *http.Request) {
 	token, err := r.Cookie("token")
 	if service.AuthorizeUser(token, err) {
 		var cardData entities.CardData
-		var response entities.CardValidationResponse
 		json.NewDecoder(r.Body).Decode(&cardData)
-		if service.SimpleLuhnCheck(cardData.Number) {
-			payment := dbaccess.GetPayment(cardData.SessionId)
-			if service.PaymentNotExpired(payment.ExpireTime) {
-				product := dbaccess.FindProductById(payment.KeyId)
-				customerLogin, customerEmail := service.GetLoginAndEmailFromToken(token.Value)
-				dbaccess.MakePaymentComplete(cardData.SessionId, time.Now(), cardData.Number)
-				dbaccess.DeleteProduct(product.Id)
+		customerLogin, customerEmail := service.GetLoginAndEmailFromToken(token.Value)
 
-				commissionSum := service.SendCommissionToPlatform(product)
-				purchaseInfo := entities.PurchaseInfo{GameName: product.Name, Buyer: customerLogin,
-					PaymentSessionId: payment.SessionId, CommissionSum: commissionSum,
-					OwnerIncome: float32(product.Price) - commissionSum,
-				}
-				service.SendEmail(customerEmail, response.Key)
-
-				domain := dbaccess.FindUserByLogin(product.Owner).Domain
-				service.SendNotificationToOwner(domain, purchaseInfo)
-
-				response = entities.CardValidationResponse{Error: "", Key: product.Key}
-			} else {
-				response.Error = "Payment time expired."
-			}
-		} else {
-			response.Error = "Invalid card."
-		}
-		js, err := json.Marshal(response)
-		if err != nil {
+		js := service.ValidateCard(cardData, customerLogin, customerEmail)
+		if js == nil{
 			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
 		}
+
 		w.Write(js)
 		return
 	}

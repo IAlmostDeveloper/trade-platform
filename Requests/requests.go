@@ -25,7 +25,7 @@ func HandleRequests() {
 
 
 	postRouter.HandleFunc("/payment", CreatePayment)
-	postRouter.HandleFunc("/validate", ValidateCard)
+	postRouter.HandleFunc("/validate", CompletePayment)
 
 	postRouter.HandleFunc("/products", CreateProduct)
 	postRouter.HandleFunc("/purchase", PurchaseProduct)
@@ -44,7 +44,7 @@ func HandleRequests() {
 	headers := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
 
 	port := ":" + os.Getenv("PORT")
-	fmt.Println(port)
+	fmt.Println("Port " + port)
 
-	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(headers, methods, origins)(router)))
+	log.Fatal(http.ListenAndServe(port, handlers.CORS(headers, methods, origins)(router)))
 }

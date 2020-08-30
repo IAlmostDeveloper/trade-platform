@@ -3,10 +3,10 @@ package service
 import (
 	"encoding/json"
 	"github.com/google/uuid"
-	service "payment-service/Service"
 	"time"
 	configs "trade-platform/Configs"
 	dbaccess "trade-platform/DBAccess"
+	"trade-platform/EmailSender"
 	entities "trade-platform/Entities"
 )
 
@@ -42,29 +42,27 @@ func GetPaymentsInPeriod(period entities.Period) []byte {
 	return js
 }
 
-func ValidateCard(cardData entities.CardData, customerLogin string, customerEmail string) []byte {
+func CompletePayment(cardData entities.CardData, customerLogin string, customerEmail string) []byte {
 	var response entities.CardValidationResponse
-	if service.SimpleLuhnCheck(cardData.Number) {
+	if SimpleLuhnCheck(cardData.Number) {
 		payment := dbaccess.GetPayment(cardData.SessionId)
 
 		if PaymentNotExpired(payment.ExpireTime) {
 			product := dbaccess.FindProductById(payment.KeyId)
 			dbaccess.MakePaymentComplete(cardData.SessionId, time.Now(), cardData.Number)
-			dbaccess.DeleteProduct(product.Id)
+			//dbaccess.DeleteProduct(product.Id)
+			commissionSum := float32(product.Price) * float32(product.Commission) / 100.0
+			SendCommissionToPlatform(commissionSum)
 
-			commissionSum := SendCommissionToPlatform(product)
+			response = entities.CardValidationResponse{Error: "", Key: product.Key}
+			EmailSender.SendEmailMessage(customerEmail, response.Key)
 
+			domain := dbaccess.FindUserByLogin(product.Owner).Domain
 			purchaseInfo := entities.PurchaseInfo{GameName: product.Name, Buyer: customerLogin,
 				PaymentSessionId: payment.SessionId, CommissionSum: commissionSum,
 				OwnerIncome: float32(product.Price) - commissionSum,
 			}
-
-			SendEmail(customerEmail, response.Key)
-
-			domain := dbaccess.FindUserByLogin(product.Owner).Domain
 			SendNotificationToOwner(domain, purchaseInfo)
-
-			response = entities.CardValidationResponse{Error: "", Key: product.Key}
 		} else {
 			response.Error = "Payment time expired."
 		}

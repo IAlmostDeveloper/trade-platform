@@ -3,13 +3,10 @@ package service
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"net/smtp"
 	"strconv"
 	"strings"
 	"time"
-	configs "trade-platform/Configs"
 	dbaccess "trade-platform/DBAccess"
 	entities "trade-platform/Entities"
 )
@@ -45,26 +42,11 @@ func PaymentNotExpired(expireTime int64) bool{
 	return expireTime > time.Now().Unix()
 }
 
-func SendEmail(customerEmail string, key string) {
-	auth := smtp.PlainAuth("", configs.SmtpClientEmail, "password", configs.SmtpClientHost)
-	to := []string{customerEmail}
-	msg := []byte("To: "+ customerEmail + "\r\n" +
-		"Subject: Trade platform!\r\n" +
-		"\r\n" +
-		"Thanks for your purchase! Here's your key: " + key + "\r\n")
-	err := smtp.SendMail(configs.SmtpClientAddress, auth, configs.SmtpClientEmail, to, msg)
-	if err != nil {
-		fmt.Println(err)
-	}
-}
-
 func SendNotificationToOwner(domain string, purchaseInfo entities.PurchaseInfo) {
 	requestBody, _ := json.Marshal(purchaseInfo)
 	http.Post(domain, "application/json", bytes.NewBuffer(requestBody))
 }
 
-func SendCommissionToPlatform(product entities.Product) float32{
-	commissionSum := float32(product.Price) * float32(product.Commission) / 100
+func SendCommissionToPlatform(commissionSum float32){
 	dbaccess.AddPaymentCommission(commissionSum)
-	return commissionSum
 }

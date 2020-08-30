@@ -50,14 +50,13 @@ func GetPaymentsInPeriod(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "Unauthorized", http.StatusUnauthorized)
 }
 
-func ValidateCard(w http.ResponseWriter, r *http.Request) {
+func CompletePayment(w http.ResponseWriter, r *http.Request) {
 	token, err := r.Cookie("token")
 	if service.AuthorizeUser(token, err) {
 		var cardData entities.CardData
 		json.NewDecoder(r.Body).Decode(&cardData)
 		customerLogin, customerEmail := service.GetLoginAndEmailFromToken(token.Value)
-
-		js := service.ValidateCard(cardData, customerLogin, customerEmail)
+		js := service.CompletePayment(cardData, customerLogin, customerEmail)
 		if js == nil{
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}

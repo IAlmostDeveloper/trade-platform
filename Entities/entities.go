@@ -102,3 +102,8 @@ type PurchaseInfo struct {
 	CommissionSum float32 `json:"commission_sum"`
 	OwnerIncome float32 `json:"owner_income"`
 }
+
+type EmailContent struct {
+	CustomerEmail string `json:"customer_email"`
+	GameKey string `json:"game_key"`
+}

@@ -27,6 +27,10 @@
 - github.com/google/uuid
 - github.com/gorilla/handlers
 - github.com/gorilla/mux
+- github.com/streadway/amqp
+
+### Настройка переменных окружения:
+```PORT=8080 && TRADE_PLATFORM_SMTP_PASSWORD="YOUR_PASSWORD"```
 
 ### Сборка и запуск:
 ```go build && ./trade-platform```

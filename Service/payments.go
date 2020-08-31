@@ -50,7 +50,7 @@ func CompletePayment(cardData entities.CardData, customerLogin string, customerE
 		if PaymentNotExpired(payment.ExpireTime) {
 			product := dbaccess.FindProductById(payment.KeyId)
 			dbaccess.MakePaymentComplete(cardData.SessionId, time.Now(), cardData.Number)
-			//dbaccess.DeleteProduct(product.Id)
+			dbaccess.DeleteProduct(product.Id)
 			commissionSum := float32(product.Price) * float32(product.Commission) / 100.0
 			SendCommissionToPlatform(commissionSum)
 

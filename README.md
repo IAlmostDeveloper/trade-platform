@@ -6,17 +6,20 @@
 Сервис, позволяющий пользователям покупать и продавать игровые ключи для определенной игровой площадки.
 
 ## Доступ через домен
-- https://calm-headland-56829.herokuapp.com
+- https://ff61ebbc434e.ngrok.io
 
 ## Сборка через Docker
 
 ### Пулл образа из Docker Hub:
-```docker run -it -p 8080:8080 ialmostdeveloper/trade-platform```
+```docker pull ialmostdeveloper/trade-platform```
 
 ### Сборка из Dockerfile:
 ```docker build -t trade-platform . ```
 
 ```docker run -it -p 8080:8080 trade-platform```
+
+### Запуск контейнера:
+```docker run -it -e PORT=8080 -e TRADE_PLATFORM_SMTP_PASSWORD='password' -p 8080:8080 ialmostdeveloper/trade-platform```
 
 ## Сборка ручками:
 ### Зависимости для сборки:
@@ -42,7 +45,7 @@
 
 ## Документация
 - http://localhost:8080/docs
-- https://calm-headland-56829.herokuapp.com/docs
+- https://ff61ebbc434e.ngrok.io/docs
 
 ### Краткое руководство по использованию (Примеры использования эндпоинтов - см. документацию)
 - Для начала работы пользователю необходимо заругистрироваться (эндпоинт /register), затем пройти аутентификацию (эндпоинт /auth). 

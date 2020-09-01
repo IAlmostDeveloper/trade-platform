@@ -16,8 +16,6 @@
 ### Сборка из Dockerfile:
 ```docker build -t trade-platform . ```
 
-```docker run -it -p 8080:8080 trade-platform```
-
 ### Запуск контейнера:
 ```docker run -it -e PORT=8080 -e TRADE_PLATFORM_SMTP_PASSWORD='password' -p 8080:8080 ialmostdeveloper/trade-platform```
 

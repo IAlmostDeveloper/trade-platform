@@ -47,9 +47,9 @@ func WriteToken(token string){
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
-	rdb.Set(configs.RedisContext, token, "Ok",
+	rdb.Set(token, "Ok",
 		time.Duration(1000000000*configs.TokenTTLSeconds)) // 10 seconds
-	rdb.Save(configs.RedisContext)
+	rdb.Save()
 }
 
 func CheckToken(token string) bool {
@@ -58,7 +58,7 @@ func CheckToken(token string) bool {
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
-	result := rdb.Get(configs.RedisContext,token)
+	result := rdb.Get(token)
 	return  result.Val() == "Ok"
 }
 
